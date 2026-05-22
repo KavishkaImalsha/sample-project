@@ -44,8 +44,8 @@ const userSlice = createSlice({
   name: "user",
   initialState: {
     email: null,
-    token: null,
-    isLoggedIn: false,
+    token: localStorage.getItem("token") || null,
+    isLoggedIn: !!localStorage.getItem("token"),
     loading: false,
     error: null,
   },
