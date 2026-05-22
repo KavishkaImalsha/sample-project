@@ -5,6 +5,8 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import FormErrorBanner from "../../components/errorMessages/FormErrorBanner";
+import { useDispatch, useSelector } from "react-redux";
+import { registerUser } from "../../store/userSlice";
 
 const RegisterPage = () => {
   const registerFormSchema = z
@@ -36,10 +38,14 @@ const RegisterPage = () => {
     mode: "onBlur",
   });
 
+  const { isLoading, error } = useSelector((state) => state.user);
+
+  const dispatch = useDispatch();
+
   const firstErrorMessage = Object.values(errors)[0]?.message;
 
   const handleRegister = (data) => {
-    console.log(data);
+    dispatch(registerUser(data));
   };
   return (
     <>
@@ -53,6 +59,7 @@ const RegisterPage = () => {
               {firstErrorMessage && (
                 <FormErrorBanner errors={{ message: firstErrorMessage }} />
               )}
+              {error && <FormErrorBanner errors={{ message: error }} />}
               <form
                 className="space-y-4 md:space-y-6"
                 onSubmit={handleSubmit(handleRegister)}
