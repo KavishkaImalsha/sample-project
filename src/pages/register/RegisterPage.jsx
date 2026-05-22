@@ -1,8 +1,46 @@
 import React from "react";
 import SubmitBtn from "../../components/buttons/SubmitBtn";
 import { Link } from "react-router";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import FormErrorBanner from "../../components/errorMessages/FormErrorBanner";
 
 const RegisterPage = () => {
+  const registerFormSchema = z
+    .object({
+      email: z.string().email("Invalid email address"),
+      password: z
+        .string()
+        .min(8, "Password must be at least 8 characters long")
+        .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+        .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+        .regex(/[0-9]/, "Password must contain at least one number")
+        .regex(
+          /[@$!%*?&]/,
+          "Password must contain at least one special character",
+        ),
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: "Passwords don't match",
+      path: ["confirmPassword"],
+    });
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(registerFormSchema),
+    mode: "onBlur",
+  });
+
+  const firstErrorMessage = Object.values(errors)[0]?.message;
+
+  const handleRegister = (data) => {
+    console.log(data);
+  };
   return (
     <>
       <section className="bg-gray-50 dark:bg-gray-900">
@@ -12,7 +50,13 @@ const RegisterPage = () => {
               <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
                 Create an account
               </h1>
-              <form className="space-y-4 md:space-y-6" action="#">
+              {firstErrorMessage && (
+                <FormErrorBanner errors={{ message: firstErrorMessage }} />
+              )}
+              <form
+                className="space-y-4 md:space-y-6"
+                onSubmit={handleSubmit(handleRegister)}
+              >
                 <div>
                   <label
                     for="email"
@@ -27,6 +71,7 @@ const RegisterPage = () => {
                     className="inputField"
                     placeholder="name@company.com"
                     required=""
+                    {...register("email")}
                   />
                 </div>
                 <div>
@@ -43,22 +88,24 @@ const RegisterPage = () => {
                     placeholder="••••••••"
                     className="inputField"
                     required=""
+                    {...register("password")}
                   />
                 </div>
                 <div>
                   <label
-                    for="confirm-password"
                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                    name="confirm-password"
                   >
                     Confirm password
                   </label>
                   <input
-                    type="confirm-password"
+                    type="password"
                     name="confirm-password"
                     id="confirm-password"
                     placeholder="••••••••"
                     className="inputField"
                     required=""
+                    {...register("confirmPassword")}
                   />
                 </div>
                 <SubmitBtn type="submit" btnName="Create an account" />
