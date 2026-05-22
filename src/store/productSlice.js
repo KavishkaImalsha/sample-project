@@ -14,8 +14,13 @@ export const addProduct = createAsyncThunk(
         },
         body: JSON.stringify(productDetails),
       });
-      const message = await response.json();
-      return message;
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data);
+      }
+
+      return data;
     } catch (error) {
       rejectWithValue(error?.message);
     }
@@ -34,14 +39,44 @@ export const getProducts = createAsyncThunk(
           // Authorization: `Bearer ${token}`,
         },
       });
-      const products = await response.json();
+      const data = await response.json();
 
-      return products;
+      if (!response.ok) {
+        return rejectWithValue(data);
+      }
+
+      return data;
     } catch (error) {
       rejectWithValue(error.message);
     }
   },
 );
+
+export const deleteProduct = createAsyncThunk(
+  "product/delete",
+  async (barcode, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${API_URL}/product/${barcode}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      });
+
+      const message = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(message);
+      }
+
+      return message;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  },
+);
+
 const productSlice = createSlice({
   name: "product",
   initialState: {
@@ -70,6 +105,17 @@ const productSlice = createSlice({
       })
       .addCase(getProducts.rejected, (state, action) => {
         ((state.loading = false), (state.error = action.payload));
+      })
+      .addCase(deleteProduct.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteProduct.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(deleteProduct.rejected, (state, action) => {
+        ((state.loading = false),
+          (state.error =
+            action.payload?.message || action.payload || "Error occured"));
       });
   },
 });

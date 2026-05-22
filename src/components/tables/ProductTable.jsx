@@ -1,6 +1,21 @@
 import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { deleteProduct } from "../../store/productSlice";
+import { toast } from "react-toastify";
 
 const ProductTable = ({ products }) => {
+  const { message, loading, error } = useSelector((state) => state.product);
+
+  const dispatch = useDispatch();
+
+  const handleDeleteProduct = async (barcode) => {
+    try {
+      const result = await dispatch(deleteProduct(barcode)).unwrap();
+      toast.success(result?.message || "Product delete succesful");
+    } catch (error) {
+      toast.error(error?.message || "Product delete unsucceful");
+    }
+  };
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
       {products.length === 0 ? (
@@ -49,7 +64,12 @@ const ProductTable = ({ products }) => {
                     <button className="px-3 py-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-all">
                       Edit
                     </button>
-                    <button className="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-all">
+                    <button
+                      onClick={() => {
+                        handleDeleteProduct(product.barcode);
+                      }}
+                      className="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-all"
+                    >
                       Delete
                     </button>
                   </td>
