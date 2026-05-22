@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import SubmitBtn from "../../components/buttons/SubmitBtn";
 import { Link } from "react-router";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import FormErrorBanner from "../../components/errorMessages/FormErrorBanner";
+import { useDispatch, useSelector } from "react-redux";
+import { loginUser } from "../../store/userSlice";
+import { toast } from "react-toastify";
+import { ClockLoader } from "react-spinners";
 
 const LoginPage = () => {
   const loginFormSchema = z.object({
@@ -30,11 +34,30 @@ const LoginPage = () => {
     mode: "onBlur",
   });
 
+  const dispatch = useDispatch();
+
+  const { loading, error } = useSelector((state) => state.user);
+
   const firstErrorMessage = Object.values(errors)[0]?.message;
 
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
+
   const handleLogin = (data) => {
-    console.log(data);
+    dispatch(loginUser(data));
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <ClockLoader />
+      </div>
+    );
+  }
+
   return (
     <>
       <section className="bg-gray-50 dark:bg-gray-900">

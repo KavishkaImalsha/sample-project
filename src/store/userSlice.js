@@ -21,28 +21,65 @@ export const registerUser = createAsyncThunk(
   },
 );
 
+export const loginUser = createAsyncThunk(
+  "user/login",
+  async (credentials, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${API_URL}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(credentials),
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      return rejectWithValue(error?.message);
+    }
+  },
+);
+
 const userSlice = createSlice({
   name: "user",
   initialState: {
     email: null,
     token: null,
     isLoggedIn: false,
+    loading: false,
     error: null,
   },
   extraReducers: (builders) => {
     builders
       .addCase(registerUser.pending, (state) => {
-        state.isLoggedIn = false;
+        state.loading = true;
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.email = action.payload.email;
         state.token = action.payload._id;
         state.isLoggedIn = true;
+        state.loading = false;
         localStorage.setItem("token", action.payload._id);
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.error = action.payload;
+        state.isLoggedIn = true;
+        state.loading = false;
+      })
+      .addCase(loginUser.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(loginUser.fulfilled, (state, action) => {
+        state.email = action.payload.email;
+        state.token = action.payload._id;
+        state.isLoggedIn = true;
+        state.loading = false;
+        localStorage.setItem("token", action.payload._id);
+      })
+      .addCase(loginUser.rejected, (state, action) => {
+        state.error = action.payload;
         state.isLoggedIn = false;
+        state.loading = false;
       });
   },
 });
