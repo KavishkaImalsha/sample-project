@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import SubmitBtn from "../../components/buttons/SubmitBtn";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,6 +8,7 @@ import FormErrorBanner from "../../components/errorMessages/FormErrorBanner";
 import { useDispatch, useSelector } from "react-redux";
 import { registerUser } from "../../store/userSlice";
 import { ClockLoader } from "react-spinners";
+import { toast } from "react-toastify";
 
 const RegisterPage = () => {
   const registerFormSchema = z
@@ -39,20 +40,21 @@ const RegisterPage = () => {
     mode: "onBlur",
   });
 
-  const { loading, error } = useSelector((state) => state.user);
+  const { loading } = useSelector((state) => state.user);
 
   const dispatch = useDispatch();
 
+  const navigate = useNavigate();
+
   const firstErrorMessage = Object.values(errors)[0]?.message;
 
-  useEffect(() => {
-    if (error) {
+  const handleRegister = async (data) => {
+    try {
+      await dispatch(registerUser(data)).unwrap();
+      navigate("/dashboard");
+    } catch (error) {
       toast.error(error);
     }
-  }, [error]);
-
-  const handleRegister = (data) => {
-    dispatch(registerUser(data));
   };
 
   if (loading) {
@@ -74,7 +76,6 @@ const RegisterPage = () => {
               {firstErrorMessage && (
                 <FormErrorBanner errors={{ message: firstErrorMessage }} />
               )}
-              {error && <FormErrorBanner errors={{ message: error }} />}
               <form
                 className="space-y-4 md:space-y-6"
                 onSubmit={handleSubmit(handleRegister)}

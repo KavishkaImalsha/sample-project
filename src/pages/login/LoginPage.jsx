@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import SubmitBtn from "../../components/buttons/SubmitBtn";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,18 +36,18 @@ const LoginPage = () => {
 
   const dispatch = useDispatch();
 
-  const { loading, error } = useSelector((state) => state.user);
+  const { loading } = useSelector((state) => state.user);
+  const navigate = useNavigate();
 
   const firstErrorMessage = Object.values(errors)[0]?.message;
 
-  useEffect(() => {
-    if (error) {
+  const handleLogin = async (data) => {
+    try {
+      await dispatch(loginUser(data)).unwrap();
+      navigate("/dashboard");
+    } catch (error) {
       toast.error(error);
     }
-  }, [error]);
-
-  const handleLogin = (data) => {
-    dispatch(loginUser(data));
   };
 
   if (loading) {
