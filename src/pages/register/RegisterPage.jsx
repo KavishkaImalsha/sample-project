@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import SubmitBtn from "../../components/buttons/SubmitBtn";
 import { Link } from "react-router";
 import { z } from "zod";
@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import FormErrorBanner from "../../components/errorMessages/FormErrorBanner";
 import { useDispatch, useSelector } from "react-redux";
 import { registerUser } from "../../store/userSlice";
+import { ClockLoader } from "react-spinners";
 
 const RegisterPage = () => {
   const registerFormSchema = z
@@ -38,15 +39,29 @@ const RegisterPage = () => {
     mode: "onBlur",
   });
 
-  const { isLoading, error } = useSelector((state) => state.user);
+  const { loading, error } = useSelector((state) => state.user);
 
   const dispatch = useDispatch();
 
   const firstErrorMessage = Object.values(errors)[0]?.message;
 
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
+
   const handleRegister = (data) => {
     dispatch(registerUser(data));
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <ClockLoader />
+      </div>
+    );
+  }
   return (
     <>
       <section className="bg-gray-50 dark:bg-gray-900">
