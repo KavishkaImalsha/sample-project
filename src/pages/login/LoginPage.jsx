@@ -27,7 +27,10 @@ const LoginPage = () => {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(loginFormSchema),
+    mode: "onBlur",
   });
+
+  const firstErrorMessage = Object.values(errors)[0]?.message;
 
   const handleLogin = (data) => {
     console.log(data);
@@ -41,8 +44,9 @@ const LoginPage = () => {
               <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
                 Sign in to your account
               </h1>
-              {errors.email && <FormErrorBanner errors={errors.email} />}
-              {errors.password && <FormErrorBanner errors={errors.password} />}
+              {firstErrorMessage && (
+                <FormErrorBanner errors={{ message: firstErrorMessage }} />
+              )}
 
               <form
                 className="space-y-4 md:space-y-6"
