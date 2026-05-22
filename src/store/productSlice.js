@@ -1,15 +1,16 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
-const API_URL = import.meta.env.VITE_BACKEND_API_URL;
+const API_URL = import.meta.env.VITE_LOCAL_BACKEND;
 export const addProduct = createAsyncThunk(
   "product/add",
   async ({ productDetails, token }, { rejectWithValue }) => {
     try {
-      const response = await fetch(`${API_URL}/product`, {
+      const response = await fetch(`${API_URL}/products`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          // Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(productDetails),
       });
@@ -25,11 +26,12 @@ export const getProducts = createAsyncThunk(
   "products/get",
   async (token, { rejectWithValue }) => {
     try {
-      const response = await fetch(`${API_URL}/product`, {
+      const response = await fetch(`${API_URL}/products`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          //   Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          // Authorization: `Bearer ${token}`,
         },
       });
       const products = await response.json();

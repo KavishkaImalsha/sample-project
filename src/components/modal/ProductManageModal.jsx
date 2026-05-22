@@ -1,22 +1,28 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import FormErrorBanner from "../errorMessages/FormErrorBanner";
 import { useDispatch, useSelector } from "react-redux";
 import { addProduct } from "../../store/productSlice";
 import { toast } from "react-toastify";
-import { ClockLoader } from "react-spinners";
+import { ClipLoader } from "react-spinners";
 
 const ProductManageModal = ({ setIsModalOpen }) => {
-  const productSchema = z.object({
-    productName: z.string().min(1, "Name is required"),
-    productPrice: z.coerce.number({
-      invalid_type_error: "Price must be a number",
-    }),
-    quantity: z.coerce.number({
-      invalid_type_error: "Quantity must be a number",
-    }),
-  });
+  // Updated Zod Schema to match Laravel validation
+  const productSchema = z
+    .object({
+      barcode: z.string().min(1, "Barcode is required"),
+      product_name: z.string().min(1, "Product name is required"),
+      cost_price: z.coerce.number().min(0, "Cost price cannot be negative"),
+      selling_price: z.coerce
+        .number()
+        .min(0, "Selling price must be at least 0"),
+      quantity: z.coerce.number().int().nonnegative(),
+      minimum_stock: z.coerce.number().int().nonnegative(),
+    })
+    .refine((data) => data.selling_price >= data.cost_price, {
+      message: "Selling price must be greater than or equal to cost price",
+      path: ["selling_price"],
+    });
 
   const {
     register,
@@ -30,94 +36,105 @@ const ProductManageModal = ({ setIsModalOpen }) => {
   const dispatch = useDispatch();
   const { token, loading } = useSelector((state) => state.product);
 
-  const firstErrorMessage = Object.values(errors)[0]?.message;
   const submitProductData = async (data) => {
     try {
-      await dispatch(addProduct({ data, token })).unwrap();
+      await dispatch(addProduct({ productDetails: data, token })).unwrap();
+      toast.success("Product added successfully!");
       reset();
+      setIsModalOpen(false);
     } catch (error) {
-      toast.error(error);
+      toast.error(error || "Failed to add product");
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <ClockLoader />
-      </div>
-    );
-  }
   return (
-    <>
-      <div className="fixed inset-0 z-50 flex justify-center items-center">
-        <div
-          className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
-          onClick={() => {
-            setIsModalOpen(false);
-          }}
-        ></div>
-
-        <div className="relative z-10 w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left shadow-xl transition-all">
-          <div className="flex justify-end">
-            <button
-              className="rounded-full h-10 w-10 flex justify-center items-center bg-gray-200 hover:bg-gray-300 text-lg text-white"
-              onClick={() => {
-                setIsModalOpen(false);
-              }}
-            >
-              <p>x</p>
-            </button>
-          </div>
-          <div className="text-center text-xl font-semibold my-3">
-            <h1>Add Products</h1>
-          </div>
-          {firstErrorMessage && (
-            <FormErrorBanner errors={{ message: firstErrorMessage }} />
-          )}
-          <form onSubmit={handleSubmit(submitProductData)}>
-            <div className="space-y-4">
-              <div>
-                <label for="productName">Product Name</label>
-                <input
-                  {...register("productName")}
-                  type="text"
-                  className="block border border-gray-300 p-1 w-full rounded"
-                  name="productName"
-                  id="productName"
-                />
-              </div>
-              <div>
-                <label for="productPrice">Product Price</label>
-                <input
-                  {...register("productPrice")}
-                  type="number"
-                  className="block border border-gray-300 p-1 w-full rounded"
-                  name="productPrice"
-                  id="productPrice"
-                />
-              </div>
-              <div>
-                <label for="quantity">Quantity</label>
-                <input
-                  {...register("quantity")}
-                  type="number"
-                  className="block border border-gray-300 p-1 w-full rounded"
-                  name="quantity"
-                  id="quantity"
-                />
-              </div>
-            </div>
-            <button
-              type="submit"
-              className="p-2 bg-blue-600 hover:bg-blue-700 w-full text-white rounded-full my-3"
-            >
-              Add Product
-            </button>
-          </form>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="w-full max-w-lg bg-white rounded-3xl p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">Add New Product</h2>
+          <button
+            onClick={() => setIsModalOpen(false)}
+            className="text-gray-400 hover:text-gray-900 transition-colors"
+          >
+            ✕
+          </button>
         </div>
+
+        <form onSubmit={handleSubmit(submitProductData)} className="space-y-5">
+          {/* Barcode & Name */}
+          <div className="grid grid-cols-2 gap-4">
+            <InputField
+              label="Barcode"
+              register={register("barcode")}
+              error={errors.barcode}
+            />
+            <InputField
+              label="Product Name"
+              register={register("product_name")}
+              error={errors.product_name}
+            />
+          </div>
+
+          {/* Pricing Section */}
+          <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-xl">
+            <InputField
+              label="Cost Price"
+              type="number"
+              register={register("cost_price")}
+              error={errors.cost_price}
+            />
+            <InputField
+              label="Selling Price"
+              type="number"
+              register={register("selling_price")}
+              error={errors.selling_price}
+            />
+          </div>
+
+          {/* Stock Section */}
+          <div className="grid grid-cols-2 gap-4">
+            <InputField
+              label="Quantity"
+              type="number"
+              register={register("quantity")}
+              error={errors.quantity}
+            />
+            <InputField
+              label="Min Stock Level"
+              type="number"
+              register={register("minimum_stock")}
+              error={errors.minimum_stock}
+            />
+          </div>
+
+          <button
+            disabled={loading}
+            type="submit"
+            className="w-full mt-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all active:scale-[0.98] flex justify-center items-center"
+          >
+            {loading ? <ClipLoader size={20} color="#fff" /> : "Save Product"}
+          </button>
+        </form>
       </div>
-    </>
+    </div>
   );
 };
+
+// Helper component for cleaner code
+const InputField = ({ label, register, error, type = "text" }) => (
+  <div className="flex flex-col">
+    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 ml-1">
+      {label}
+    </label>
+    <input
+      {...register}
+      type={type}
+      className={`w-full px-4 py-2.5 bg-gray-50 border rounded-xl outline-none focus:ring-2 transition-all ${error ? "border-red-300 focus:ring-red-200" : "border-gray-200 focus:ring-indigo-100 focus:border-indigo-400"}`}
+    />
+    {error && (
+      <span className="text-xs text-red-500 mt-1 ml-1">{error.message}</span>
+    )}
+  </div>
+);
 
 export default ProductManageModal;
