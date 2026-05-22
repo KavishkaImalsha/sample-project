@@ -1,13 +1,35 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ProductManageModal from "../../components/modal/ProductManageModal";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { getProducts } from "../../store/productSlice";
+import { ClockLoader } from "react-spinners";
+import { toast } from "react-toastify";
+import ProductTable from "../../components/tables/ProductTable";
 
 const Dashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const dispatch = useDispatch();
+  const { products, loading, token } = useSelector((state) => state.product);
 
-  const products = useSelector((state) => state.product);
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-  console.log(products);
+  const fetchData = async () => {
+    try {
+      await dispatch(getProducts(token)).unwrap();
+    } catch (error) {
+      toast.error(error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <ClockLoader />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -29,6 +51,8 @@ const Dashboard = () => {
         </div>
       </div>
       {isModalOpen && <ProductManageModal setIsModalOpen={setIsModalOpen} />}
+
+      <ProductTable products={products} />
     </>
   );
 };
