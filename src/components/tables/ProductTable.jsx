@@ -1,11 +1,9 @@
-import React from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { deleteProduct } from "../../store/productSlice";
+import React, { useState } from "react";
+import { useDispatch } from "react-redux";
+import { actions, deleteProduct } from "../../store/productSlice";
 import { toast } from "react-toastify";
 
-const ProductTable = ({ products }) => {
-  const { message, loading, error } = useSelector((state) => state.product);
-
+const ProductTable = ({ products, setIsModalOpen, isModalOpen }) => {
   const dispatch = useDispatch();
 
   const handleDeleteProduct = async (barcode) => {
@@ -15,6 +13,11 @@ const ProductTable = ({ products }) => {
     } catch (error) {
       toast.error(error?.message || "Product delete unsucceful");
     }
+  };
+
+  const handleUpdate = (product) => {
+    dispatch(actions.setSelectProduct(product));
+    setIsModalOpen(true);
   };
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
@@ -61,7 +64,12 @@ const ProductTable = ({ products }) => {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right space-x-2">
-                    <button className="px-3 py-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-all">
+                    <button
+                      onClick={() => {
+                        handleUpdate(product);
+                      }}
+                      className="px-3 py-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-all"
+                    >
                       Edit
                     </button>
                     <button

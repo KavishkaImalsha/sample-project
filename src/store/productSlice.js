@@ -77,6 +77,32 @@ export const deleteProduct = createAsyncThunk(
   },
 );
 
+export const updateProduct = createAsyncThunk(
+  "product/update",
+  async ({ product, barcode }, { rejectWithValue }) => {
+    console.log(product);
+
+    try {
+      const response = await fetch(`${API_URL}/product/${barcode}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(product),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data);
+      }
+
+      return data;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  },
+);
 const productSlice = createSlice({
   name: "product",
   initialState: {
@@ -84,6 +110,16 @@ const productSlice = createSlice({
     loading: false,
     error: null,
     token: localStorage.getItem("token"),
+    selectProduct: null,
+  },
+  reducers: {
+    setSelectProduct(state, action) {
+      state.selectProduct = action.payload;
+    },
+
+    clearSelectProduct(state, action) {
+      state.selectProduct = null;
+    },
   },
   extraReducers: (builders) => {
     builders
@@ -116,8 +152,21 @@ const productSlice = createSlice({
         ((state.loading = false),
           (state.error =
             action.payload?.message || action.payload || "Error occured"));
+      })
+      .addCase(updateProduct.pending, (state, action) => {
+        state.loading = true;
+      })
+      .addCase(updateProduct.fulfilled, (state, action) => {
+        state.selectProduct = null;
+        state.loading = false;
+      })
+      .addCase(updateProduct.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
+
+export const actions = productSlice.actions;
 
 export default productSlice;

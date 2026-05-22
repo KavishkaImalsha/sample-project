@@ -55,7 +55,11 @@ const Dashboard = () => {
         </div>
         {isModalOpen && <ProductManageModal setIsModalOpen={setIsModalOpen} />}
 
-        <ProductTable products={products} />
+        <ProductTable
+          products={products}
+          setIsModalOpen={setIsModalOpen}
+          isModalOpe={isModalOpen}
+        />
       </div>
     </>
   );

@@ -2,12 +2,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useDispatch, useSelector } from "react-redux";
-import { addProduct } from "../../store/productSlice";
+import { actions, addProduct, updateProduct } from "../../store/productSlice";
 import { toast } from "react-toastify";
 import { ClipLoader } from "react-spinners";
+import InputField from "../../components/inputs/InputField";
 
 const ProductManageModal = ({ setIsModalOpen }) => {
-  // Updated Zod Schema to match Laravel validation
+  const { selectProduct } = useSelector((state) => state.product);
+  const isEditMode = !!selectProduct;
   const productSchema = z
     .object({
       barcode: z.string().min(1, "Barcode is required"),
@@ -31,15 +33,50 @@ const ProductManageModal = ({ setIsModalOpen }) => {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(productSchema),
+    values: selectProduct || {
+      barcode: "",
+      product_name: "",
+      cost_price: "",
+      selling_price: "",
+      quantity: "",
+      minimum_stock: "",
+    },
   });
 
   const dispatch = useDispatch();
   const { token, loading } = useSelector((state) => state.product);
 
+  const onClose = () => {
+    dispatch(actions.clearSelectProduct());
+    setIsModalOpen(false);
+  };
+
   const submitProductData = async (data) => {
     try {
-      await dispatch(addProduct({ productDetails: data, token })).unwrap();
-      toast.success("Product added successfully!");
+      if (!isEditMode) {
+        const addProductResult = await dispatch(
+          addProduct({ productDetails: data, token }),
+        ).unwrap();
+        toast.success(
+          addProductResult?.message || "Product added successfully!",
+        );
+      } else {
+        const updateProductResult = await dispatch(
+          updateProduct({
+            product: {
+              product_name: data.product_name,
+              cost_price: data.cost_price,
+              selling_price: data.selling_price,
+              quantity: data.quantity,
+              minimum_stock: data.minimum_stock,
+            },
+            barcode: selectProduct.barcode,
+          }),
+        ).unwrap();
+        toast.success(
+          updateProductResult?.message || "Product update succesful",
+        );
+      }
       reset();
       setIsModalOpen(false);
     } catch (error) {
@@ -51,9 +88,11 @@ const ProductManageModal = ({ setIsModalOpen }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="w-full max-w-lg bg-white rounded-3xl p-8 shadow-2xl animate-in zoom-in-95 duration-200">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Add New Product</h2>
+          <h2 className="text-2xl font-bold text-gray-900">
+            {isEditMode ? "Update Product" : "Add New Product"}
+          </h2>
           <button
-            onClick={() => setIsModalOpen(false)}
+            onClick={() => onClose()}
             className="text-gray-400 hover:text-gray-900 transition-colors"
           >
             ✕
@@ -67,11 +106,13 @@ const ProductManageModal = ({ setIsModalOpen }) => {
               label="Barcode"
               register={register("barcode")}
               error={errors.barcode}
+              name="barcode"
             />
             <InputField
               label="Product Name"
               register={register("product_name")}
               error={errors.product_name}
+              name="product_name"
             />
           </div>
 
@@ -82,12 +123,14 @@ const ProductManageModal = ({ setIsModalOpen }) => {
               type="number"
               register={register("cost_price")}
               error={errors.cost_price}
+              name="cost_price"
             />
             <InputField
               label="Selling Price"
               type="number"
               register={register("selling_price")}
               error={errors.selling_price}
+              name="selling_price"
             />
           </div>
 
@@ -98,12 +141,14 @@ const ProductManageModal = ({ setIsModalOpen }) => {
               type="number"
               register={register("quantity")}
               error={errors.quantity}
+              name="quantity"
             />
             <InputField
               label="Min Stock Level"
               type="number"
               register={register("minimum_stock")}
               error={errors.minimum_stock}
+              name="minimum_stock"
             />
           </div>
 
@@ -112,29 +157,18 @@ const ProductManageModal = ({ setIsModalOpen }) => {
             type="submit"
             className="w-full mt-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all active:scale-[0.98] flex justify-center items-center"
           >
-            {loading ? <ClipLoader size={20} color="#fff" /> : "Save Product"}
+            {loading ? (
+              <ClipLoader size={20} color="#fff" />
+            ) : isEditMode ? (
+              "Update Product"
+            ) : (
+              "Save Product"
+            )}
           </button>
         </form>
       </div>
     </div>
   );
 };
-
-// Helper component for cleaner code
-const InputField = ({ label, register, error, type = "text" }) => (
-  <div className="flex flex-col">
-    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 ml-1">
-      {label}
-    </label>
-    <input
-      {...register}
-      type={type}
-      className={`w-full px-4 py-2.5 bg-gray-50 border rounded-xl outline-none focus:ring-2 transition-all ${error ? "border-red-300 focus:ring-red-200" : "border-gray-200 focus:ring-indigo-100 focus:border-indigo-400"}`}
-    />
-    {error && (
-      <span className="text-xs text-red-500 mt-1 ml-1">{error.message}</span>
-    )}
-  </div>
-);
 
 export default ProductManageModal;
