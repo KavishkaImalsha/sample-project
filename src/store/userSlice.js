@@ -6,14 +6,20 @@ export const registerUser = createAsyncThunk(
   "user/register",
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await fetch(`${API_URL}/login`, {
+      const response = await fetch(`${API_URL}/add-user`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
         },
-        body: JSON.stringify(userData),
+        body: JSON.stringify({ ...userData, role: "user" }),
       });
       const message = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(message?.message);
+      }
+
       return message;
     } catch (error) {
       return rejectWithValue(error.message);
@@ -60,11 +66,11 @@ const userSlice = createSlice({
         state.loading = true;
       })
       .addCase(registerUser.fulfilled, (state, action) => {
-        state.email = action.payload.email;
-        state.token = action.payload._id;
+        state.role = action.payload.role;
+        state.token = action.payload.token;
         state.isLoggedIn = true;
         state.loading = false;
-        localStorage.setItem("token", action.payload._id);
+        localStorage.setItem("token", action.payload.token);
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.error = action.payload;

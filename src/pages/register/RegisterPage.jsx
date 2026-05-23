@@ -1,5 +1,3 @@
-import React, { useEffect } from "react";
-import SubmitBtn from "../../components/buttons/SubmitBtn";
 import { Link, useNavigate } from "react-router";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -9,11 +7,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { registerUser } from "../../store/userSlice";
 import { ClockLoader } from "react-spinners";
 import { toast } from "react-toastify";
+import InputField from "../../components/inputs/InputField";
+import { useEffect } from "react";
 
 const RegisterPage = () => {
   const registerFormSchema = z
     .object({
-      email: z.string().email("Invalid email address"),
+      first_name: z.string(),
+      last_name: z.string(),
+      username: z.string().email("Invalid email address"),
       password: z
         .string()
         .min(8, "Password must be at least 8 characters long")
@@ -46,8 +48,6 @@ const RegisterPage = () => {
 
   const navigate = useNavigate();
 
-  const firstErrorMessage = Object.values(errors)[0]?.message;
-
   const handleRegister = async (data) => {
     try {
       await dispatch(registerUser(data)).unwrap();
@@ -66,83 +66,84 @@ const RegisterPage = () => {
   }
   return (
     <>
-      <section className="bg-gray-50 dark:bg-gray-900">
-        <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-          <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
-            <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
-              <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
+      <section className="min-h-screen flex flex-col md:flex-row bg-gray-50">
+        {/* Left Side: Branding */}
+        <div className="hidden md:flex flex-1 bg-indigo-600 items-center justify-center p-12">
+          <div className="text-white space-y-6">
+            <h2 className="text-4xl font-bold">Join our POS system.</h2>
+            <p className="text-indigo-100 text-lg">
+              Create your account to start managing your inventory and tracking
+              sales with precision.
+            </p>
+          </div>
+        </div>
+
+        {/* Right Side: Registration Form */}
+        <div className="flex-1 flex items-center justify-center p-6 sm:p-12">
+          <div className="w-full max-w-md space-y-8">
+            <div className="space-y-2">
+              <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
                 Create an account
               </h1>
-              {firstErrorMessage && (
-                <FormErrorBanner errors={{ message: firstErrorMessage }} />
-              )}
-              <form
-                className="space-y-4 md:space-y-6"
-                onSubmit={handleSubmit(handleRegister)}
-              >
-                <div>
-                  <label
-                    for="email"
-                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                  >
-                    Your email
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    className="inputField"
-                    placeholder="name@company.com"
-                    required=""
-                    {...register("email")}
-                  />
-                </div>
-                <div>
-                  <label
-                    for="password"
-                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                  >
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    name="password"
-                    id="password"
-                    placeholder="••••••••"
-                    className="inputField"
-                    required=""
-                    {...register("password")}
-                  />
-                </div>
-                <div>
-                  <label
-                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                    name="confirm-password"
-                  >
-                    Confirm password
-                  </label>
-                  <input
-                    type="password"
-                    name="confirm-password"
-                    id="confirm-password"
-                    placeholder="••••••••"
-                    className="inputField"
-                    required=""
-                    {...register("confirmPassword")}
-                  />
-                </div>
-                <SubmitBtn type="submit" btnName="Create an account" />
-                <p className="text-sm font-light text-gray-500 dark:text-gray-400">
-                  Already have an account?{" "}
-                  <Link
-                    to="/login"
-                    className="font-medium text-primary-600 hover:underline dark:text-primary-500"
-                  >
-                    Login here
-                  </Link>
-                </p>
-              </form>
+              <p className="text-gray-500">Sign up to get started.</p>
             </div>
+
+            <form className="space-y-5" onSubmit={handleSubmit(handleRegister)}>
+              <div className="grid grid-cols-2 gap-4">
+                <InputField
+                  label="First Name"
+                  register={register("first_name")}
+                  error={errors.first_name}
+                  name="first_name"
+                />
+                <InputField
+                  label="Last Name"
+                  register={register("last_name")}
+                  error={errors.last_name}
+                  name="last_name"
+                />
+              </div>
+
+              <InputField
+                label="Username (Email)"
+                register={register("username")}
+                error={errors.username}
+                name="username"
+                type="email"
+              />
+
+              <InputField
+                label="Password"
+                type="password"
+                register={register("password")}
+                error={errors.password}
+                name="password"
+              />
+              <InputField
+                label="Confirm Password"
+                type="password"
+                register={register("confirmPassword")}
+                error={errors.confirmPassword}
+                name="confirmPassword"
+              />
+
+              <button
+                type="submit"
+                className="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200"
+              >
+                Create account
+              </button>
+
+              <p className="text-center text-sm text-gray-600">
+                Already have an account?{" "}
+                <Link
+                  to="/login"
+                  className="text-indigo-600 font-bold hover:underline"
+                >
+                  Login here
+                </Link>
+              </p>
+            </form>
           </div>
         </div>
       </section>
