@@ -2,7 +2,8 @@ import { Routes, Route, Navigate } from "react-router";
 import LoginPage from "./pages/login/LoginPage";
 import RegisterPage from "./pages/register/RegisterPage";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Dashboard from "./pages/Dashboard/Dashboard";
+import DashboardLayout from "./pages/Dashboard/DashboardLayout";
+import Products from "./pages/admin/Products";
 
 function App() {
   return (
@@ -12,7 +13,9 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
 
         <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route path="/dashboard/products" element={<Products />} />
+          </Route>
         </Route>
 
         <Route path="/" element={<Navigate to="/login" />} />

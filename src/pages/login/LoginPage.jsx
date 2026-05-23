@@ -44,7 +44,7 @@ const LoginPage = () => {
     try {
       const result = await dispatch(loginUser(data)).unwrap();
       toast.success(result?.message || "User Login successful");
-      navigate("/dashboard");
+      navigate("/dashboard/products");
     } catch (error) {
       toast.error(error);
     }

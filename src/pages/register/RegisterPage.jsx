@@ -51,7 +51,7 @@ const RegisterPage = () => {
   const handleRegister = async (data) => {
     try {
       await dispatch(registerUser(data)).unwrap();
-      navigate("/dashboard");
+      navigate("/dashboard/products");
     } catch (error) {
       toast.error(error);
     }

@@ -6,7 +6,7 @@ import { ClockLoader } from "react-spinners";
 import { toast } from "react-toastify";
 import ProductTable from "../../components/tables/ProductTable";
 
-const Dashboard = () => {
+const Products = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const dispatch = useDispatch();
   const { products, loading, token } = useSelector((state) => state.product);
@@ -30,39 +30,34 @@ const Dashboard = () => {
       </div>
     );
   }
-
   return (
     <>
-      <div className="mx-6">
-        <div className="m-5 flex justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">
-              Welcome to product Management
-            </h1>
-            <sub className="text-gray-500">
-              Here you can manage your products, add new products, update
-              existing products, and delete products.
-            </sub>
-          </div>
-          <div>
-            <button
-              className="bg-blue-600 p-2 rounded-xl hover:bg-blue-700 text-white"
-              onClick={() => setIsModalOpen(true)}
-            >
-              Add Product
-            </button>
-          </div>
+      <div className="m-5 flex justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Welcome to product Management</h1>
+          <sub className="text-gray-500">
+            Here you can manage your products, add new products, update existing
+            products, and delete products.
+          </sub>
         </div>
-        {isModalOpen && <ProductManageModal setIsModalOpen={setIsModalOpen} />}
-
-        <ProductTable
-          products={products}
-          setIsModalOpen={setIsModalOpen}
-          isModalOpe={isModalOpen}
-        />
+        <div>
+          <button
+            className="bg-blue-600 p-2 rounded-xl hover:bg-blue-700 text-white"
+            onClick={() => setIsModalOpen(true)}
+          >
+            Add Product
+          </button>
+        </div>
       </div>
+      {isModalOpen && <ProductManageModal setIsModalOpen={setIsModalOpen} />}
+
+      <ProductTable
+        products={products}
+        setIsModalOpen={setIsModalOpen}
+        isModalOpe={isModalOpen}
+      />
     </>
   );
 };
 
-export default Dashboard;
+export default Products;
