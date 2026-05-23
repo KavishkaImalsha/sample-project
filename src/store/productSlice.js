@@ -80,8 +80,6 @@ export const deleteProduct = createAsyncThunk(
 export const updateProduct = createAsyncThunk(
   "product/update",
   async ({ product, barcode }, { rejectWithValue }) => {
-    console.log(product);
-
     try {
       const response = await fetch(`${API_URL}/product/${barcode}`, {
         method: "PUT",
@@ -128,6 +126,7 @@ const productSlice = createSlice({
       })
       .addCase(addProduct.fulfilled, (state, action) => {
         state.loading = false;
+        state.products.push(action.payload?.product);
       })
       .addCase(addProduct.rejected, (state, action) => {
         ((state.loading = false), (state.error = action.payload));
@@ -147,6 +146,9 @@ const productSlice = createSlice({
       })
       .addCase(deleteProduct.fulfilled, (state, action) => {
         state.loading = false;
+        state.products = state.products.filter(
+          (product) => product.barcode != action.payload.barcode,
+        );
       })
       .addCase(deleteProduct.rejected, (state, action) => {
         ((state.loading = false),
@@ -159,6 +161,13 @@ const productSlice = createSlice({
       .addCase(updateProduct.fulfilled, (state, action) => {
         state.selectProduct = null;
         state.loading = false;
+        const index = state.products.findIndex(
+          (product) => product.barcode === action.payload.product.barcode,
+        );
+
+        if (index !== -1) {
+          state.products[index] = action.payload.product;
+        }
       })
       .addCase(updateProduct.rejected, (state, action) => {
         state.loading = false;
