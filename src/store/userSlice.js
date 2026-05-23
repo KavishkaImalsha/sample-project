@@ -1,12 +1,12 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
-const API_URL = import.meta.env.VITE_BACKEND_API_URL;
+const API_URL = import.meta.env.VITE_LOCAL_BACKEND;
 
 export const registerUser = createAsyncThunk(
   "user/register",
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await fetch(`${API_URL}/user`, {
+      const response = await fetch(`${API_URL}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -29,10 +29,15 @@ export const loginUser = createAsyncThunk(
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify(credentials),
       });
+
       const data = await response.json();
+      if (!response.ok) {
+        return rejectWithValue(data?.message);
+      }
       return data;
     } catch (error) {
       return rejectWithValue(error?.message);
@@ -43,7 +48,7 @@ export const loginUser = createAsyncThunk(
 const userSlice = createSlice({
   name: "user",
   initialState: {
-    email: null,
+    role: null,
     token: localStorage.getItem("token") || null,
     isLoggedIn: !!localStorage.getItem("token"),
     loading: false,
@@ -70,11 +75,11 @@ const userSlice = createSlice({
         state.loading = true;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
-        state.email = action.payload.email;
-        state.token = action.payload._id;
+        state.role = action.payload.role;
+        state.token = action.payload.token;
         state.isLoggedIn = true;
         state.loading = false;
-        localStorage.setItem("token", action.payload._id);
+        localStorage.setItem("token", action.payload.token);
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.error = action.payload;

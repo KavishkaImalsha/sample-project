@@ -9,10 +9,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../../store/userSlice";
 import { toast } from "react-toastify";
 import { ClockLoader } from "react-spinners";
+import InputField from "../../components/inputs/InputField";
 
 const LoginPage = () => {
   const loginFormSchema = z.object({
-    email: z.string().email("Invalid email address"),
+    username: z.string().email("Invalid email address"),
     password: z
       .string()
       .min(8, "Password must be at least 8 characters long")
@@ -39,11 +40,10 @@ const LoginPage = () => {
   const { loading } = useSelector((state) => state.user);
   const navigate = useNavigate();
 
-  const firstErrorMessage = Object.values(errors)[0]?.message;
-
   const handleLogin = async (data) => {
     try {
-      await dispatch(loginUser(data)).unwrap();
+      const result = await dispatch(loginUser(data)).unwrap();
+      toast.success(result?.message || "User Login successful");
       navigate("/dashboard");
     } catch (error) {
       toast.error(error);
@@ -60,77 +60,67 @@ const LoginPage = () => {
 
   return (
     <>
-      <section className="bg-gray-50 dark:bg-gray-900">
-        <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-          <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
-            <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
-              <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-                Sign in to your account
+      <section className="min-h-screen flex flex-col md:flex-row bg-gray-50">
+        {/* Left Side: Branding / Marketing */}
+        <div className="hidden md:flex flex-1 bg-indigo-600 items-center justify-center p-12">
+          <div className="text-white space-y-6">
+            <h2 className="text-4xl font-bold">
+              Manage your inventory with ease.
+            </h2>
+            <p className="text-indigo-100 text-lg">
+              The most efficient way to track your stock, manage costs, and
+              scale your business operations.
+            </p>
+          </div>
+        </div>
+
+        {/* Right Side: Login Form */}
+        <div className="flex-1 flex items-center justify-center p-6 sm:p-12">
+          <div className="w-full max-w-sm space-y-8">
+            <div className="space-y-2">
+              <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+                Welcome back
               </h1>
-              {firstErrorMessage && (
-                <FormErrorBanner errors={{ message: firstErrorMessage }} />
-              )}
-
-              <form
-                className="space-y-4 md:space-y-6"
-                action="#"
-                onSubmit={handleSubmit(handleLogin)}
-              >
-                <div>
-                  <label
-                    for="email"
-                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                  >
-                    Your email
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    className="inputField"
-                    placeholder="name@company.com"
-                    required=""
-                    {...register("email")}
-                  />
-                </div>
-                <div>
-                  <label
-                    for="password"
-                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                  >
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    name="password"
-                    id="password"
-                    placeholder="••••••••"
-                    className="inputField"
-                    required=""
-                    {...register("password")}
-                  />
-                </div>
-                <div className="flex items-center justify-end">
-                  <a
-                    href="#"
-                    className="text-sm font-medium text-primary-600 hover:underline dark:text-white"
-                  >
-                    Forgot password?
-                  </a>
-                </div>
-                <SubmitBtn type="submit" btnName="Sign in" />
-
-                <p className="text-sm font-light text-gray-500 dark:text-white">
-                  Don’t have an account yet?{" "}
-                  <Link
-                    to="/register"
-                    className="font-medium text-primary-600 hover:underline dark:text-primary-500"
-                  >
-                    Sign up
-                  </Link>
-                </p>
-              </form>
+              <p className="text-gray-500">
+                Please enter your details to sign in.
+              </p>
             </div>
+
+            <form className="space-y-6" onSubmit={handleSubmit(handleLogin)}>
+              <div className="space-y-4">
+                <InputField
+                  label="Username"
+                  register={register("username")}
+                  error={errors.username}
+                  type="email"
+                  name="username"
+                />
+                <InputField
+                  label="password"
+                  register={register("password")}
+                  error={errors.password}
+                  type="password"
+                  name="password"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200"
+              >
+                Sign in
+              </button>
+
+              <p className="text-center text-sm text-gray-600">
+                Don’t have an account?{" "}
+                <Link
+                  to="/register"
+                  className="text-indigo-600 font-bold hover:underline"
+                >
+                  Sign up
+                </Link>
+              </p>
+            </form>
           </div>
         </div>
       </section>

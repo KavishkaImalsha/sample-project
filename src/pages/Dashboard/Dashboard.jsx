@@ -46,7 +46,7 @@ const Dashboard = () => {
           </div>
           <div>
             <button
-              className="bg-blue-600 p-2 rounded hover:bg-blue-700 text-white"
+              className="bg-blue-600 p-2 rounded-xl hover:bg-blue-700 text-white"
               onClick={() => setIsModalOpen(true)}
             >
               Add Product
