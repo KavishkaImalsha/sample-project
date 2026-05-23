@@ -1,8 +1,11 @@
 import { Package, LogOut, LayoutDashboard, Settings } from "lucide-react";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router";
+import { actions } from "../../store/userSlice";
 
 const AdminDashboardSideNav = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const navItems = [
     {
@@ -19,7 +22,7 @@ const AdminDashboardSideNav = () => {
   ];
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    dispatch(actions.userLogout());
     navigate("/login");
   };
 
